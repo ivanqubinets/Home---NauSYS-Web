@@ -1,0 +1,65 @@
+var retry = document.getElementsByClassName("news-page__see-more-retry")[0];
+var posts = document.getElementsByClassName("news-page__posts")[0];
+var seeMoreBtn = document.getElementsByClassName("news-page__see-more-btn")[0];
+var retryBtn = document.getElementsByClassName(
+  "news-page__see-more-btn-retry"
+)[0];
+var loader = document.getElementsByClassName("news-page__see-more-loader")[0];
+var offset = 9; // Next page to load. Incrementing by 1 on each see-more-posts callback
+setState();
+
+seeMoreBtn.addEventListener("click", seeMorePosts);
+retryBtn.addEventListener("click", seeMorePosts);
+
+function seeMorePosts() {
+  setState("loading");
+  var data = {
+    action: "load_posts_by_ajax",
+    offset: offset,
+    security: blog.security,
+  };
+  $.post(blog.ajaxurl, data, function (response) {
+    if ($.trim(response) != "") {
+      posts.innerHTML += response;
+      offset += 3;
+    } else {
+      seeMoreBtn.remove();
+      posts.innerHTML +=
+        "<p>" + wp.i18n.__("No more posts available", "nuweweb") + "</p>";
+    }
+  }).then(
+    () => setState(),
+    () => setState("error")
+  );
+}
+
+function setState(state) {
+  switch (state) {
+    case "loading":
+      setSeeMoreBtnVisibility("none");
+      setLoaderVisibility("grid");
+      setRetryVisibility("none");
+      break;
+    case "error":
+      setSeeMoreBtnVisibility("none");
+      setLoaderVisibility("none");
+      setRetryVisibility("grid");
+      break;
+    default:
+      setSeeMoreBtnVisibility("grid");
+      setLoaderVisibility("none");
+      setRetryVisibility("none");
+  }
+}
+
+function setSeeMoreBtnVisibility(value) {
+  seeMoreBtn.style.display = value;
+}
+
+function setLoaderVisibility(value) {
+  loader.style.display = value;
+}
+
+function setRetryVisibility(value) {
+  retry.style.display = value;
+}
